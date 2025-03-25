@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Audio with Custom Markers</title>
+  <title>West End Blues: where are the main sections?</title>
   <style>
     body {
       font-family: sans-serif;
@@ -19,12 +19,14 @@
       padding-left: 0;
     }
     #markers li {
+      font-size: 1.1em;
       margin-bottom: 0.5em;
     }
     .marker-button {
       margin-left: 1em;
       font-size: 0.8em;
       cursor: pointer;
+      color: red;
     }
     button {
       font-size: 1.2em;
@@ -34,7 +36,7 @@
   </style>
 </head>
 <body>
-  <h1>West End Blues: where are the main sections?</h1>
+  <h1>Audio Player with Custom Markers</h1>
 
   <div id="waveform"></div>
 
@@ -59,7 +61,6 @@
     const playBtn = document.getElementById('play')
     const markersList = document.getElementById('markers')
     let markerIdCounter = 1
-    const regionElements = new Map()
 
     playBtn.onclick = () => {
       ws.playPause()
@@ -99,16 +100,15 @@
         deleteBtn.textContent = '🗑️'
         deleteBtn.className = 'marker-button'
         deleteBtn.title = 'Delete marker'
+
         deleteBtn.onclick = (e) => {
           e.stopPropagation()
-          regionsPlugin.removeRegion(region)
+          regionsPlugin.removeRegion(region.id)
           li.remove()
-          regionElements.delete(region.id)
         }
 
         li.appendChild(deleteBtn)
         markersList.appendChild(li)
-        regionElements.set(region.id, li)
 
         markerIdCounter++
       }
