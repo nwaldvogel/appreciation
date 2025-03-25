@@ -21,17 +21,20 @@
     #markers li {
       font-size: 1.2em;
       margin-bottom: 0.5em;
-      display: flex;
+    }
+    .marker-item {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 0.5em;
+      cursor: pointer;
     }
     .marker-button {
       font-size: 1em;
       cursor: pointer;
       color: red;
-      margin-left: 1em;
       border: none;
       background: none;
+      padding: 0;
     }
     button {
       font-size: 1.2em;
@@ -41,7 +44,7 @@
   </style>
 </head>
 <body>
-  <h1>West End Blues</h1>
+  <h1>Audio Player with Custom Markers</h1>
 
   <div id="waveform"></div>
 
@@ -92,28 +95,27 @@
           resize: false,
         })
 
-        // Wait for the region to be fully initialized with an ID
-        setTimeout(() => {
-          const li = document.createElement('li')
-          li.textContent = `${name} @ ${time.toFixed(2)}s`
-          li.style.cursor = 'pointer'
+        // Create list item with text + delete button
+        const li = document.createElement('li')
+        const span = document.createElement('span')
+        span.className = 'marker-item'
+        span.textContent = `${name} @ ${time.toFixed(2)}s`
+        span.onclick = () => ws.setTime(time)
 
-          li.onclick = () => ws.setTime(time)
+        const deleteBtn = document.createElement('button')
+        deleteBtn.className = 'marker-button'
+        deleteBtn.title = 'Delete marker'
+        deleteBtn.textContent = '🗑️'
 
-          const deleteBtn = document.createElement('button')
-          deleteBtn.textContent = '🗑️'
-          deleteBtn.className = 'marker-button'
-          deleteBtn.title = 'Delete marker'
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation()
+          regionsPlugin.removeRegion(region.id)
+          li.remove()
+        }
 
-          deleteBtn.onclick = (e) => {
-            e.stopPropagation()
-            regionsPlugin.removeRegion(region.id)
-            li.remove()
-          }
-
-          li.appendChild(deleteBtn)
-          markersList.appendChild(li)
-        }, 0)
+        span.appendChild(deleteBtn)
+        li.appendChild(span)
+        markersList.appendChild(li)
 
         markerIdCounter++
       }
