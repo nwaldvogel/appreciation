@@ -21,32 +21,23 @@
     #markers li {
       font-size: 1.2em;
       margin-bottom: 0.5em;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       cursor: pointer;
-    }
-    .marker-button {
-      font-size: 1em;
-      cursor: pointer;
-      color: red;
-      border: none;
-      background: none;
     }
     button {
-      font-size: 1.2em;
-      margin-right: 1em;
-      padding: 0.5em 1em;
+      font-size: 1.1em;
+      margin: 0.5em 0.5em 0.5em 0;
+      padding: 0.4em 1em;
     }
   </style>
 </head>
 <body>
-  <h1>Audio Player with Custom Markers</h1>
+  <h1>West End Blues</h1>
 
   <div id="waveform"></div>
 
   <button id="play" title="Play/Pause">▶️</button>
   <button id="add-marker">➕ Add Marker</button>
+  <button id="delete-last">🗑️ Delete Last Marker</button>
 
   <ul id="markers"></ul>
 
@@ -64,18 +55,19 @@
     })
 
     const playBtn = document.getElementById('play')
-    const addMarkerBtn = document.getElementById('add-marker')
+    const addBtn = document.getElementById('add-marker')
+    const deleteLastBtn = document.getElementById('delete-last')
     const markersList = document.getElementById('markers')
-    let markerIdCounter = 1
 
-    playBtn.onclick = () => {
-      ws.playPause()
-    }
+    let markerIdCounter = 1
+    const markerRegions = []
+
+    playBtn.onclick = () => ws.playPause()
 
     ws.on('play', () => playBtn.textContent = '⏸️')
     ws.on('pause', () => playBtn.textContent = '▶️')
 
-    addMarkerBtn.onclick = () => {
+    addBtn.onclick = () => {
       const time = ws.getCurrentTime()
       const name = prompt("Enter a name for the marker:", `Marker ${markerIdCounter}`)
 
@@ -88,28 +80,24 @@
           resize: false,
         })
 
-        // Create marker list item
         const li = document.createElement('li')
-        li.innerHTML = `
-          <span>${name} @ ${time.toFixed(2)}s</span>
-          <button class="marker-button" title="Delete marker">🗑️</button>
-        `
-
-        // Click on text to jump to marker
-        li.querySelector('span').onclick = () => ws.setTime(time)
-
-        // Handle delete
-        li.querySelector('button').onclick = (e) => {
-          e.stopPropagation()
-          regionsPlugin.removeRegion(region.id)
-          li.remove()
-
-          // 👇 Force redraw
-          ws.drawBuffer()
-        }
+        li.textContent = `${name} @ ${time.toFixed(2)}s`
+        li.onclick = () => ws.setTime(time)
 
         markersList.appendChild(li)
+        markerRegions.push({ region, li })
+
         markerIdCounter++
+      }
+    }
+
+    deleteLastBtn.onclick = () => {
+      const last = markerRegions.pop()
+      if (last) {
+        regionsPlugin.removeRegion(last.region.id)
+        last.li.remove()
+      } else {
+        alert("No markers to delete.")
       }
     }
   </script>
