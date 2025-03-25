@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>West End Blues: where are the main sections?</title>
+  <title>Audio with Custom Markers</title>
   <style>
     body {
       font-family: sans-serif;
@@ -19,14 +19,19 @@
       padding-left: 0;
     }
     #markers li {
-      font-size: 1.1em;
+      font-size: 1.2em;
       margin-bottom: 0.5em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .marker-button {
-      margin-left: 1em;
-      font-size: 0.8em;
+      font-size: 1em;
       cursor: pointer;
       color: red;
+      margin-left: 1em;
+      border: none;
+      background: none;
     }
     button {
       font-size: 1.2em;
@@ -36,7 +41,7 @@
   </style>
 </head>
 <body>
-  <h1>Audio Player with Custom Markers</h1>
+  <h1>West End Blues</h1>
 
   <div id="waveform"></div>
 
@@ -87,28 +92,28 @@
           resize: false,
         })
 
-        // Create marker list item
-        const li = document.createElement('li')
-        li.textContent = `${name} @ ${time.toFixed(2)}s`
-        li.style.cursor = 'pointer'
+        // Wait for the region to be fully initialized with an ID
+        setTimeout(() => {
+          const li = document.createElement('li')
+          li.textContent = `${name} @ ${time.toFixed(2)}s`
+          li.style.cursor = 'pointer'
 
-        // Click to jump to marker
-        li.onclick = () => ws.setTime(time)
+          li.onclick = () => ws.setTime(time)
 
-        // Add delete button
-        const deleteBtn = document.createElement('span')
-        deleteBtn.textContent = '🗑️'
-        deleteBtn.className = 'marker-button'
-        deleteBtn.title = 'Delete marker'
+          const deleteBtn = document.createElement('button')
+          deleteBtn.textContent = '🗑️'
+          deleteBtn.className = 'marker-button'
+          deleteBtn.title = 'Delete marker'
 
-        deleteBtn.onclick = (e) => {
-          e.stopPropagation()
-          regionsPlugin.removeRegion(region.id)
-          li.remove()
-        }
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation()
+            regionsPlugin.removeRegion(region.id)
+            li.remove()
+          }
 
-        li.appendChild(deleteBtn)
-        markersList.appendChild(li)
+          li.appendChild(deleteBtn)
+          markersList.appendChild(li)
+        }, 0)
 
         markerIdCounter++
       }
