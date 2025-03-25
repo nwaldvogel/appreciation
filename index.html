@@ -2,12 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WaveSurfer with Regions</title>
+  <title>WaveSurfer with Timeline</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2em;
-    }
     #waveform {
       width: 100%;
       height: 128px;
@@ -16,75 +12,50 @@
   </style>
 </head>
 <body>
-  <h1>WaveSurfer Demo</h1>
+  <h1>WaveSurfer Timeline Demo</h1>
   <div id="waveform"></div>
 
   <p>
-    <label>
-      <input type="checkbox" checked />
-      Loop regions
-    </label>
-
-    <label style="margin-left: 2em">
-      Zoom: <input type="range" min="10" max="1000" value="10" />
-    </label>
+    📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_timeline.TimelinePlugin">Timeline plugin docs</a>
   </p>
 
   <script type="module">
     import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-    import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js'
+    import TimelinePlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.esm.js'
 
-    const regions = RegionsPlugin.create()
+    const topTimeline = TimelinePlugin.create({
+      height: 20,
+      insertPosition: 'beforebegin',
+      timeInterval: 0.2,
+      primaryLabelInterval: 5,
+      secondaryLabelInterval: 1,
+      style: {
+        fontSize: '20px',
+        color: '#2D5B88',
+      },
+    })
 
-    const ws = WaveSurfer.create({
+    const bottomTimeline = TimelinePlugin.create({
+      height: 10,
+      timeInterval: 0.1,
+      primaryLabelInterval: 1,
+      style: {
+        fontSize: '10px',
+        color: '#6A3274',
+      },
+    })
+
+    const wavesurfer = WaveSurfer.create({
       container: '#waveform',
       waveColor: 'rgb(200, 0, 200)',
       progressColor: 'rgb(100, 0, 100)',
-      url: 'sound.mp3',
-      plugins: [regions],
+      url: 'audio.mp3', // <-- Your GitHub-hosted audio file
+      minPxPerSec: 100,
+      plugins: [topTimeline, bottomTimeline],
     })
 
-    const random = (min, max) => Math.random() * (max - min) + min
-    const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`
-
-    ws.on('decode', () => {
-      regions.addRegion({ start: 0, end: 5, content: 'Intro', color: randomColor(), resize: true })
-      regions.addRegion({ start: 6, end: 10, content: 'Chorus', color: randomColor(), drag: true })
-    })
-
-    regions.enableDragSelection({ color: 'rgba(255, 0, 0, 0.1)' })
-
-    let loop = true
-    document.querySelector('input[type="checkbox"]').onclick = (e) => {
-      loop = e.target.checked
-    }
-
-    let activeRegion = null
-    regions.on('region-in', (region) => {
-      activeRegion = region
-    })
-    regions.on('region-out', (region) => {
-      if (activeRegion === region && loop) {
-        region.play()
-      } else {
-        activeRegion = null
-      }
-    })
-    regions.on('region-clicked', (region, e) => {
-      e.stopPropagation()
-      activeRegion = region
-      region.play(true)
-      region.setOptions({ color: randomColor() })
-    })
-
-    ws.on('interaction', () => {
-      activeRegion = null
-    })
-
-    ws.once('decode', () => {
-      document.querySelector('input[type="range"]').oninput = (e) => {
-        ws.zoom(Number(e.target.value))
-      }
+    wavesurfer.once('interaction', () => {
+      wavesurfer.play()
     })
   </script>
 </body>
