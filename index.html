@@ -2,61 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WaveSurfer with Timeline</title>
+  <title>Audio Player with Markers</title>
   <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+    }
     #waveform {
       width: 100%;
       height: 128px;
       margin-bottom: 1em;
     }
+    #markers {
+      margin-top: 1em;
+    }
   </style>
 </head>
 <body>
-  <h1>WaveSurfer Timeline Demo</h1>
+  <h1>Audio with Markers</h1>
   <div id="waveform"></div>
 
-  <p>
-    📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_timeline.TimelinePlugin">Timeline plugin docs</a>
-  </p>
+  <button id="play">Play/Pause</button>
+  <button id="add-marker">Add Marker</button>
+
+  <ul id="markers">
+    <!-- Marker list -->
+  </ul>
 
   <script type="module">
     import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-    import TimelinePlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.esm.js'
+    import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js'
 
-    const topTimeline = TimelinePlugin.create({
-      height: 20,
-      insertPosition: 'beforebegin',
-      timeInterval: 0.2,
-      primaryLabelInterval: 5,
-      secondaryLabelInterval: 1,
-      style: {
-        fontSize: '20px',
-        color: '#2D5B88',
-      },
-    })
-
-    const bottomTimeline = TimelinePlugin.create({
-      height: 10,
-      timeInterval: 0.1,
-      primaryLabelInterval: 1,
-      style: {
-        fontSize: '10px',
-        color: '#6A3274',
-      },
-    })
-
-    const wavesurfer = WaveSurfer.create({
+    const regionsPlugin = RegionsPlugin.create()
+    const ws = WaveSurfer.create({
       container: '#waveform',
-      waveColor: 'rgb(200, 0, 200)',
-      progressColor: 'rgb(100, 0, 100)',
-      url: 'sound.mp3', // <-- Your GitHub-hosted audio file
-      minPxPerSec: 100,
-      plugins: [topTimeline, bottomTimeline],
+      waveColor: 'purple',
+      progressColor: 'rebeccapurple',
+      url: 'sound.mp3',
+      plugins: [regionsPlugin],
     })
 
-    wavesurfer.once('interaction', () => {
-      wavesurfer.play()
-    })
+    document.getElementById('play').onclick = () => {
+      ws.playPause()
+    }
+
+    const markersList = document.getElementById('markers')
+    let markerCount = 1
+
+    document.getElementById('add-marker').onclick = () => {
+      const time = ws.getCurrentTime()
+      const label = `Marker ${markerCount++} @ ${time.toFixed(2)}s`
+
+      // Add region (zero-length marker)
+      regionsPlugin.addRegion({
+        start: time,
+        content: label,
+        color: 'rgba(255, 0, 0, 0.3)',
+        drag: false,
+        resize: false,
+      })
+
+      // Add to visible list
+      const li = document.createElement('li')
+      li.textContent = label
+      li.onclick = () => ws.setTime(time)
+      markersList.appendChild(li)
+    }
   </script>
 </body>
 </html>
