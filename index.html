@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Audio Player with Markers</title>
+  <title>Audio with Markers</title>
   <style>
     body {
       font-family: sans-serif;
@@ -15,19 +15,28 @@
     }
     #markers {
       margin-top: 1em;
+      list-style: none;
+      padding-left: 0;
+    }
+    #markers li {
+      margin-bottom: 0.5em;
+    }
+    .marker-button {
+      margin-left: 1em;
+      font-size: 0.8em;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Audio with Markers</h1>
+  <h1>Audio Player with Custom Markers</h1>
+
   <div id="waveform"></div>
 
   <button id="play">Play/Pause</button>
   <button id="add-marker">Add Marker</button>
 
-  <ul id="markers">
-    <!-- Marker list -->
-  </ul>
+  <ul id="markers"></ul>
 
   <script type="module">
     import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
@@ -47,26 +56,48 @@
     }
 
     const markersList = document.getElementById('markers')
-    let markerCount = 1
+    let markerIdCounter = 1
+    const regionElements = new Map() // map region.id to its list item
 
     document.getElementById('add-marker').onclick = () => {
       const time = ws.getCurrentTime()
-      const label = `Marker ${markerCount++} @ ${time.toFixed(2)}s`
+      const name = prompt("Enter a name for the marker:", `Marker ${markerIdCounter}`)
 
-      // Add region (zero-length marker)
-      regionsPlugin.addRegion({
-        start: time,
-        content: label,
-        color: 'rgba(255, 0, 0, 0.3)',
-        drag: false,
-        resize: false,
-      })
+      if (name) {
+        const region = regionsPlugin.addRegion({
+          start: time,
+          content: name,
+          color: 'rgba(255, 0, 0, 0.3)',
+          drag: false,
+          resize: false,
+        })
 
-      // Add to visible list
-      const li = document.createElement('li')
-      li.textContent = label
-      li.onclick = () => ws.setTime(time)
-      markersList.appendChild(li)
+        // Create marker list item
+        const li = document.createElement('li')
+        li.textContent = `${name} @ ${time.toFixed(2)}s`
+        li.style.cursor = 'pointer'
+
+        // Click to jump to marker
+        li.onclick = () => ws.setTime(time)
+
+        // Add delete button
+        const deleteBtn = document.createElement('span')
+        deleteBtn.textContent = '🗑️'
+        deleteBtn.className = 'marker-button'
+        deleteBtn.title = 'Delete marker'
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation()
+          regionsPlugin.removeRegion(region)
+          li.remove()
+          regionElements.delete(region.id)
+        }
+
+        li.appendChild(deleteBtn)
+        markersList.appendChild(li)
+        regionElements.set(region.id, li)
+
+        markerIdCounter++
+      }
     }
   </script>
 </body>
